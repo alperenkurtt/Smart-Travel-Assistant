@@ -1,0 +1,1 @@
+# Ana uygulama (Flask veya terminal tabanlı başlangıç)

@@ -1,0 +1,12 @@
+# Gereken Python kütüphaneleri
+
+🤖 Uygulayabileceğin Basit Kurallar
+Hava Durumu (main)	Öneri Türü
+Clear	Açık hava, park, yürüyüş
+Rain, Snow	Müze, kapalı alan, AVM
+Clouds	Nötr (her ikisi de olabilir)
+
+Sıcaklık (temp)	Etki
+< 10°C	Sadece kapalı öneriler
+10–25°C	İdeal, her şey olabilir
+> 30°C	Serin yerler, AVM, deniz kenarı
