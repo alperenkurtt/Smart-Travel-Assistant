@@ -10,3 +10,28 @@ Sıcaklık (temp)	Etki
 < 10°C	Sadece kapalı öneriler
 10–25°C	İdeal, her şey olabilir
 > 30°C	Serin yerler, AVM, deniz kenarı
+
+akilli_rota_olusturucu/
+│
+├── app.py                        # Ana uygulama (Flask veya terminal tabanlı başlangıç)
+├── requirements.txt             # Gereken Python kütüphaneleri
+│
+├── config/
+│   └── settings.py              # API anahtarları ve genel ayarlar
+│
+├── data/
+│   └── cities.csv               # Şehir listesi veya sabit veriler
+│
+├── services/
+│   ├── weather_api.py          # OpenWeatherMap API veri çekimi
+│   ├── places_api.py           # Gezilecek yerleri çeken servis
+│   └── recommendation.py       # Rota önerme mantığı (kurallar veya ML)
+│
+├── utils/
+│   └── helpers.py              # Yardımcı fonksiyonlar (json işleme, log, vb.)
+│
+├── models/                      # (Opsiyonel) ML modelin varsa
+│   └── model.pkl
+│
+└── templates/                   # (Opsiyonel) Web arayüz olacaksa HTML dosyaları
+    └── index.html

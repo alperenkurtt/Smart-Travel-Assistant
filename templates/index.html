@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Akıllı Seyahat Asistanı</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-dark: #300c09;
+            --primary-medium: #887673;
+            --primary-light: #f3eae8;
+        }
+
+        body {
+            background: var(--primary-light);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(48, 12, 9, 0.1);
+            margin-top: 2rem;
+            border: 2px solid rgba(136, 118, 115, 0.2);
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 2rem 0;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .hero-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-section {
+            padding: 2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-medium));
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(48, 12, 9, 0.3);
+            background: linear-gradient(135deg, #4a1411, #9b8582);
+        }
+
+        #mapContainer {
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 2rem 2rem 1.5rem 2rem;
+            box-shadow: 0 10px 25px rgba(48, 12, 9, 0.1);
+            border: 2px solid var(--primary-medium);
+        }
+
+        .schedule-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            box-shadow: 0 5px 15px rgba(48, 12, 9, 0.1);
+            border-left: 4px solid var(--primary-medium);
+            transition: all 0.3s ease;
+        }
+
+        .schedule-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(48, 12, 9, 0.15);
+        }
+
+        .weather-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+            color: var(--primary-dark);
+        }
+
+        .place-marker {
+            background: var(--primary-dark);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(48, 12, 9, 0.3);
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .city-input {
+            border-radius: 50px;
+            border: 2px solid var(--primary-medium);
+            padding: 12px 20px;
+            font-size: 1.1rem;
+        }
+
+        .city-input:focus {
+            border-color: var(--primary-dark);
+            box-shadow: 0 0 0 0.2rem rgba(48, 12, 9, 0.25);
+            outline: none;
+        }
+
+        .days-select {
+            border-radius: 15px;
+            border: 2px solid var(--primary-medium);
+            padding: 12px 15px;
+        }
+
+        .days-select:focus {
+            border-color: var(--primary-dark);
+            box-shadow: 0 0 0 0.2rem rgba(48, 12, 9, 0.25);
+            outline: none;
+        }
+
+        .error-alert {
+            border-radius: 15px;
+            border: none;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .route-info {
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 2rem 1.5rem 2rem;
+            box-shadow: 0 8px 20px rgba(48, 12, 9, 0.15);
+        }
+
+        .spinner-border {
+            color: var(--primary-dark) !important;
+        }
+
+        .badge {
+            background-color: var(--primary-dark) !important;
+        }
+
+        .text-warning {
+            color: #b8860b !important;
+        }
+
+        .popup-content h6 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-card">
+                    <!-- Hero Section -->
+                    <div class="hero-section">
+                        <h1><i class="fas fa-map-marked-alt"></i> Akıllı Seyahat Asistanı</h1>
+                        <p class="lead">Hava durumuna göre kişiselleştirilmiş gezi rotası oluşturun</p>
+                    </div>
+
+                    <!-- Form Section -->
+                    <div class="form-section">
+                        <form id="travelForm">
+                            <div class="row align-items-end">
+                                <div class="col-md-6 mb-3">
+                                    <label for="city" class="form-label"><i class="fas fa-city"></i> Şehir</label>
+                                    <input type="text"
+                                           class="form-control city-input"
+                                           id="city"
+                                           placeholder="Örn: Istanbul, Berlin, Paris"
+                                           required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="days" class="form-label"><i class="fas fa-calendar-alt"></i> Gün</label>
+                                    <select class="form-select days-select" id="days" required>
+                                        <option value="1">1 Gün</option>
+                                        <option value="2" selected>2 Gün</option>
+                                        <option value="3">3 Gün</option>
+                                        <option value="4">4 Gün</option>
+                                        <option value="5">5 Gün</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-route"></i> Plan Oluştur
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Loading -->
+                        <div class="loading-spinner" id="loadingSpinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <p class="mt-2">Sizin için mükemmel rota hazırlanıyor... ✨</p>
+                        </div>
+
+                        <!-- Error Alert -->
+                        <div class="alert alert-danger error-alert d-none" id="errorAlert"></div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="results-section d-none" id="resultsSection">
+                        <!-- Route Info -->
+                        <div class="route-info">
+                            <h4><i class="fas fa-map-signs"></i> <span id="cityName"></span> Gezi Rotası</h4>
+                            <p class="mb-0"><i class="fas fa-map-marked"></i> <span id="totalPlaces"></span> lokasyon • <span id="totalDays"></span> günlük plan</p>
+                        </div>
+
+                        <!-- Map -->
+                        <div id="mapContainer"></div>
+
+                        <!-- Schedule -->
+                        <div class="mt-4" style="margin: 2rem 2rem 1.5rem 2rem;">
+                            <h4><i class="fas fa-clock"></i> Detaylı Program</h4>
+                            <div id="scheduleContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+    <script>
+        let map = null;
+
+        // Weather icon mapping
+        const weatherIcons = {
+            'Clear': 'fas fa-sun',
+            'Clouds': 'fas fa-cloud',
+            'Rain': 'fas fa-cloud-rain',
+            'Snow': 'fas fa-snowflake',
+            'Thunderstorm': 'fas fa-bolt',
+            'Drizzle': 'fas fa-cloud-drizzle',
+            'Mist': 'fas fa-smog'
+        };
+
+        // Form submit
+        document.getElementById('travelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const city = document.getElementById('city').value.trim();
+            const days = document.getElementById('days').value;
+
+            if (!city) {
+                showError('Lütfen bir şehir ismi girin');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('resultsSection').classList.add('d-none');
+            document.getElementById('errorAlert').classList.add('d-none');
+
+            try {
+                const response = await fetch('/create-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ city, days: parseInt(days) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'Bir hata oluştu');
+                }
+
+            } catch (error) {
+                showError('Bağlantı hatası: ' + error.message);
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.classList.remove('d-none');
+        }
+
+        function displayResults(data) {
+            // Update info
+            document.getElementById('cityName').textContent = data.city;
+            document.getElementById('totalPlaces').textContent = data.total_places;
+            document.getElementById('totalDays').textContent = data.days;
+
+            // Show results
+            document.getElementById('resultsSection').classList.remove('d-none');
+
+            // Create map
+            createMap(data.map_data);
+
+            // Create schedule
+            createSchedule(data.schedule);
+
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createMap(mapData) {
+            // Destroy existing map
+            if (map) {
+                map.remove();
+            }
+
+            // Debug: Map data'yı console'a yazdır
+            console.log('Map Data:', mapData);
+
+            // Create new map
+            map = L.map('mapContainer').setView([mapData.center.lat, mapData.center.lng], 12);
+
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add starting point
+            L.marker([mapData.center.lat, mapData.center.lng], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div class="place-marker" style="background: #28a745;"><i class="fas fa-home"></i></div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map).bindPopup(`<b>🏠 Başlangıç Noktası</b><br>${mapData.city}`);
+
+            // Add route line - sadece geçerli koordinatları kullan
+            const validCoordinates = mapData.route_line.filter(coord =>
+                coord && coord.length === 2 &&
+                typeof coord[0] === 'number' && typeof coord[1] === 'number'
+            );
+
+            if (validCoordinates.length > 1) {
+                L.polyline(validCoordinates, {
+                    color: '#300c09',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 5'
+                }).addTo(map);
+            }
+
+            // Add place markers - sadece geçerli koordinatları olan mekanlar
+            const validPlaces = mapData.places.filter(place =>
+                place.lat && place.lng &&
+                typeof place.lat === 'number' && typeof place.lng === 'number'
+            );
+
+            console.log(`Toplam mekan: ${mapData.places.length}, Geçerli koordinatlı: ${validPlaces.length}`);
+
+            validPlaces.forEach((place, index) => {
+                const marker = L.marker([place.lat, place.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="place-marker">${place.order}</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <h6><i class="fas fa-map-marker-alt"></i> ${place.name}</h6>
+                        <p class="mb-1"><small>${place.address}</small></p>
+                        <p class="mb-1"><i class="fas fa-tag"></i> ${place.category}</p>
+                        ${place.rating ? `<p class="mb-0"><i class="fas fa-star text-warning"></i> ${place.rating}</p>` : ''}
+                        <p class="mb-0"><small>📍 ${place.lat.toFixed(4)}, ${place.lng.toFixed(4)}</small></p>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+            });
+
+            // Fit map to show all markers
+            if (validPlaces.length > 0) {
+                const allMarkers = validPlaces.map(place => L.marker([place.lat, place.lng]));
+                const group = new L.featureGroup(allMarkers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+
+            // Eğer hiç geçerli mekan yoksa uyarı göster
+            if (validPlaces.length === 0) {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'alert alert-warning mt-2';
+                warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Mekanların koordinat bilgileri bulunamadı. Sadece başlangıç noktası gösteriliyor.';
+                document.getElementById('mapContainer').parentNode.insertBefore(warningDiv, document.getElementById('mapContainer').nextSibling);
+            }
+        }
+
+        function createSchedule(schedule) {
+            const container = document.getElementById('scheduleContainer');
+            container.innerHTML = '';
+
+            schedule.forEach((slot, index) => {
+                const place = slot.place;
+                const weatherIcon = weatherIcons[slot.weather] || 'fas fa-question';
+
+                const scheduleCard = document.createElement('div');
+                scheduleCard.className = 'schedule-card';
+
+                scheduleCard.innerHTML = `
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="mb-1"><i class="fas fa-clock"></i> ${slot.time_display}</h6>
+                            <p class="mb-0">
+                                <i class="${weatherIcon} weather-icon"></i>
+                                ${slot.temperature}°C • ${slot.weather}
+                            </p>
+                        </div>
+                        <div class="col-md-9">
+                            ${place ? `
+                                <h6 class="mb-1">
+                                    <span class="badge bg-primary me-2">${index + 1}</span>
+                                    ${place.name}
+                                </h6>
+                                <p class="mb-1"><i class="fas fa-map-marker-alt"></i> ${place.location?.formatted_address || 'Adres bilgisi yok'}</p>
+                                ${place.categories && place.categories[0] ? `
+                                    <small class="text-muted"><i class="fas fa-tag"></i> ${place.categories[0].name}</small>
+                                ` : ''}
+                                ${place.rating ? `
+                                    <small class="text-warning ms-2"><i class="fas fa-star"></i> ${place.rating}</small>
+                                ` : ''}
+                            ` : `
+                                <p class="text-muted mb-0"><i class="fas fa-exclamation-circle"></i> Bu zaman dilimi için uygun yer bulunamadı</p>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(scheduleCard);
+            });
+        }
+    </script>
+</body>
+</html>
