@@ -175,12 +175,3 @@ city_coords = {
 - Proje Sahibi: Alperen Kurt
 - E-posta: alpereenkurtt@gmail.com
 
-## 🙏 Teşekkürler
-
-- OpenWeatherMap API ekibine hava durumu verileri için
-- Foursquare API ekibine mekan verileri için
-- Bootstrap ve Leaflet.js topluluklarına
-
----
-
-⭐ Projeyi beğendiyseniz yıldız vermeyi unutmayın!
